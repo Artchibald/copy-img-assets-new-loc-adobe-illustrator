@@ -1,34 +1,35 @@
-function move1610x1Png() {
-    alert(" \n\nThis script only works locally not on a server. \n\nDon't forget to change .txt to .js on the script. \n\nFULL README: https://github.com/Artchibald/batch-800-500-illustrator-export   \n\n  This script relates to this other script: https://github.com/Artchibald/2022_icon_rebrand_scripts. It is an addon built on top to run a batch export of the 800x500 no text. \n\nVideo set up tutorial available here: https://youtu.be/XXXXXXXXXXXXXX. \n\nOpen Illustrator but don't open a document. \n\nGo to file > Scripts > Other Scripts > Import our new script. \n\n Illustrator says(not responding) on PC but it will respond, give Bill Gates some time XD!). \n\nIf you run the script again, you should probably delete the previous assets created.They get intermixed and overwritten. \n\nBoth artboard sizes of 1 and 2 must be exactly 256px x 256px. \n\nGuides must be on a layer called exactly 'Guidelines'. \n\nIcons must be on a layer called exactly 'Art'. \n\nMake sure all layers are unlocked to avoid bugs. \n\nExported assets will be saved where the.ai file is saved. \n\nPlease try to use underscore instead of spaces to avoid bugs in filenames. \n\nMake sure you are using the correct swatches / colours. \n\nIllustrator check advanced colour mode is correct: Edit > Assign profile > Must match sRGB IEC61966 - 2.1. \n\nSelect each individual color shape and under Window > Colours make sure each shape colour is set to rgb in tiny top right burger menu if bugs encountered. \n\nIf it does not save exports as intended, check the file permissions of where the.ai file is saved(right click folder > Properties > Visibility > Read and write access ? Also you can try apply permissions to sub folders too if you find that option) \n\nAny issues: archie ATsymbol archibaldbutler.com.");
-    var i;
-    var CSTasks = (function () {
-        var tasks = {};
-        tasks.scaleAndExportPNG = function (sourceDoc, destFile) {
-            var options = new ExportOptionsPNG24();
-            /*@ts-ignore*/
-            options.antiAliasing = true;
-            /*@ts-ignore*/
-            options.transparency = true;
-            /*@ts-ignore*/
-            options.artBoardClipping = false;
-            sourceDoc.exportFile(destFile, ExportType.PNG24, options);
-        };
-        return tasks;
-    })();
+//alert("\n\nThis script only works locally not on a server. \n\nDon't forget to change .txt to .js on the script. \n\nFULL README: https://github.com/Artchibald/batch-800-500-illustrator-export   \n\n  This script relates to this other script: https://github.com/Artchibald/2022_icon_rebrand_scripts. It is an addon built on top to run a batch export of the 800x500 no text. \n\nVideo set up tutorial available here: https://youtu.be/XXXXXXXXXXXXXX. \n\nOpen Illustrator but don't open a document. \n\nGo to file > Scripts > Other Scripts > Import our new script. \n\n Illustrator says(not responding) on PC but it will respond, give Bill Gates some time XD!). \n\nIf you run the script again, you should probably delete the previous assets created.They get intermixed and overwritten. \n\nBoth artboard sizes of 1 and 2 must be exactly 256px x 256px. \n\nGuides must be on a layer called exactly 'Guidelines'. \n\nIcons must be on a layer called exactly 'Art'. \n\nMake sure all layers are unlocked to avoid bugs. \n\nExported assets will be saved where the.ai file is saved. \n\nPlease try to use underscore instead of spaces to avoid bugs in filenames. \n\nMake sure you are using the correct swatches / colours. \n\nIllustrator check advanced colour mode is correct: Edit > Assign profile > Must match sRGB IEC61966 - 2.1. \n\nSelect each individual color shape and under Window > Colours make sure each shape colour is set to rgb in tiny top right burger menu if bugs encountered. \n\nIf it does not save exports as intended, check the file permissions of where the.ai file is saved(right click folder > Properties > Visibility > Read and write access ? Also you can try apply permissions to sub folders too if you find that option) \n\nAny issues: archie ATsymbol archibaldbutler.com.");
+var files;
+var folder = Folder.selectDialog("Please select the folder where the images you need are saved");
+var i;
+var folderOneName = "Sitecore-product-icon-assets";
+var folderTwoName = "Marketo-product-icon-assets";
+var CSTasks = (function () {
+    var tasks = {};
+    tasks.scaleAndExportPNG = function (sourceDoc, destFile) {
+        var options = new ExportOptionsPNG24();
+        /*@ts-ignore*/
+        options.antiAliasing = true;
+        /*@ts-ignore*/
+        options.transparency = true;
+        /*@ts-ignore*/
+        options.artBoardClipping = false;
+        sourceDoc.exportFile(destFile, ExportType.PNG24, options);
+    };
+    return tasks;
+})();
+try {
+    new Folder("".concat(folder.path, "/").concat(folderOneName)).create();
+    new Folder("".concat(folder.path, "/").concat(folderTwoName)).create();
+}
+catch (e) {
+    alert("Issues with creating setup folders. Check your file permission properties or file structure.", e.message);
+}
+function move1610x2Png() {
     if (app.documents.length > 0) {
         alert("ERROR: \n Close all documents before running this script.");
     }
     else {
-        var files, folder = Folder.selectDialog("Please select the folder where the images you need are saved");
-        var folderOneName = "Sitecore-product-icon-assets";
-        var folderTwoName = "Marketo-product-icon-assets";
-        try {
-            new Folder("".concat(folder.path, "/").concat(folderOneName)).create();
-            new Folder("".concat(folder.path, "/").concat(folderTwoName)).create();
-        }
-        catch (e) {
-            alert("Issues with creating setup folders. Check your file permission properties or file structure.", e.message);
-        }
         if (folder != null) {
             files = GetFiles(folder);
             process(files);
@@ -42,7 +43,7 @@ function move1610x1Png() {
             var sourceDoc = app.activeDocument;
             var filename = "/".concat(sourceDoc.name);
             var destFile = new File(Folder("".concat(sourceDoc.path, "/../../../../../Sitecore-product-icon-assets")) + filename);
-            CSTasks.scaleAndExportPNG(sourceDoc, destFile, 500, 800);
+            CSTasks.scaleAndExportPNG(sourceDoc, destFile, 1000, 1600);
             // Save
             //app.activeDocument.saveAs(file, SaveOptions_ai())
             // Close
@@ -54,7 +55,7 @@ function move1610x1Png() {
         var i, item, files = [], items = folder.getFiles();
         for (i = 0; i < items.length; i++) {
             item = items[i];
-            var fileformat = item.name.match(/\_1610_small.png$/i), legacyFile = item.name.indexOf("(legacyFile)") > 0;
+            var fileformat = item.name.match(/\_1610_large.png$/i), legacyFile = item.name.indexOf("(legacyFile)") > 0;
             if (item instanceof Folder) {
                 files = files.concat(GetFiles(item));
             }
@@ -67,4 +68,48 @@ function move1610x1Png() {
         return files;
     }
 }
-move1610x1Png();
+move1610x2Png();
+function moveExpressivePng() {
+    if (app.documents.length > 0) {
+        alert("ERROR: \n Close all documents before running this script.");
+    }
+    else {
+        if (folder != null) {
+            files = GetFiles(folder);
+            process(files);
+        }
+    }
+    function process(files) {
+        var i;
+        for (i = 0; i < files.length; i++) {
+            var file = files[i];
+            app.open(file);
+            var sourceDoc = app.activeDocument;
+            var filename = "/".concat(sourceDoc.name);
+            var destFile = new File(Folder("".concat(sourceDoc.path, "/../../../Sitecore-product-icon-assets")) + filename);
+            CSTasks.scaleAndExportPNG(sourceDoc, destFile, 1024, 1024);
+            // Save
+            //app.activeDocument.saveAs(file, SaveOptions_ai())
+            // Close
+            app.activeDocument.close(SaveOptions.DONOTSAVECHANGES);
+        }
+        // alert("Script is done.");
+    }
+    function GetFiles(folder) {
+        var i, item, files = [], items = folder.getFiles();
+        for (i = 0; i < items.length; i++) {
+            item = items[i];
+            var fileformat = item.name.match(/\_Expressive.png$/i), legacyFile = item.name.indexOf("(legacyFile)") > 0;
+            if (item instanceof Folder) {
+                files = files.concat(GetFiles(item));
+            }
+            // If the item is a file, push it to the array.
+            else if (item instanceof File && fileformat && !legacyFile) {
+                // Push files to the array
+                files.push(item);
+            }
+        }
+        return files;
+    }
+}
+moveExpressivePng();
