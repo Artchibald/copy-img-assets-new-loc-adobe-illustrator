@@ -3,13 +3,22 @@ var i;
 // reusable functions we need
 var CSTasks = (function () {
     var tasks = {};
-    tasks.newRect = function (x, y, width, height) {
-        var rect = [];
-        rect[0] = x;
-        rect[1] = -y;
-        rect[2] = width + x;
-        rect[3] = -(height + y);
-        return rect;
+    //takes a document, destination file, starting width and desired width
+    //scales the document proportionally to the desired width and exports as a PNG
+    tasks.scaleAndExportPNG = function (sourceDoc, destFile, startWidth, desiredWidth) {
+        var scaling = (100.0 * desiredWidth) / startWidth;
+        var options = new ExportOptionsPNG24();
+        /*@ts-ignore*/
+        options.antiAliasing = true;
+        /*@ts-ignore*/
+        options.transparency = true;
+        /*@ts-ignore*/
+        options.artBoardClipping = false;
+        /*@ts-ignore*/
+        // options.horizontalScale = scaling;
+        /*@ts-ignore*/
+        // options.verticalScale = scaling;
+        sourceDoc.exportFile(destFile, ExportType.PNG24, options);
     };
     return tasks;
 })();
@@ -29,7 +38,7 @@ else {
     if (folder != null) {
         // returns an array of file paths in the selected folder.
         files = GetFiles(folder);
-        alert(files);
+        //alert(files);
         // This is where things actually start happening...
         process(files);
     }
@@ -54,30 +63,22 @@ function process(files) {
         app.open(file);
         // If overwrite is false, create a new file, otherwise use "file" variable;
         //  file = !overwrite ? new File(file.toString().replace(".ai", " (legacyFile).ai")) : file;
+        // return;
         // custom actions starts here
-        // alert(sourceDoc.name);
+        var sourceDoc = app.activeDocument;
+        //alert(sourceDoc.name);
+        //save a master PNG
+        // sourceDoc Edit artboard size now here
+        var filename = "/testing.png";
+        var destFile = new File(Folder("".concat(sourceDoc.path)) + filename);
+        CSTasks.scaleAndExportPNG(sourceDoc, destFile, 500, 800);
         // Save
         //app.activeDocument.saveAs(file, SaveOptions_ai())
         // Close
         app.activeDocument.close(SaveOptions.DONOTSAVECHANGES);
     }
-    // For better or for worse...
+    // For better or for worse... 
     alert("Script is done.");
-}
-function SaveOptions_ai() {
-    var saveOptions = new IllustratorSaveOptions();
-    // saveOptions.compatibility = Compatibility["ILLUSTRATOR" + targetVersion];
-    /*@ts-ignore*/
-    saveOptions.flattenOutput = OutputFlattening.PRESERVEAPPEARANCE;
-    /*@ts-ignore*/
-    saveOptions.compressed = false; // Version 10 or later
-    /*@ts-ignore*/
-    saveOptions.pdfCompatible = true; // Version 10 or later
-    /*@ts-ignore*/
-    saveOptions.embedICCProfile = true; // Version 9 or later
-    /*@ts-ignore*/
-    saveOptions.embedLinkedFiles = true; // Version 7 or later
-    return saveOptions;
 }
 function GetFiles(folder) {
     var i, item, 
@@ -90,7 +91,7 @@ function GetFiles(folder) {
         item = items[i];
         // Find .ai files
         // /_1610_2x.png
-        var fileformat = item.name.match(/\_1610_2x.png$/i), legacyFile = item.name.indexOf("(legacyFile)") > 0;
+        var fileformat = item.name.match(/\_1610_small.png$/i), legacyFile = item.name.indexOf("(legacyFile)") > 0;
         // If item is a folder, check the folder for files.
         if (item instanceof Folder) {
             // Combine existing array with files found in the folder
