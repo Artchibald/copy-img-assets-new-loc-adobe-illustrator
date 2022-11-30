@@ -11,128 +11,19 @@ var CSTasks = (function () {
         rect[3] = -(height + y);
         return rect;
     };
-    tasks.selectContentsOnArtboard = function (sourceDoc, i) {
-        sourceDoc.selection = null;
-        sourceDoc.artboards.setActiveArtboardIndex(i);
-        sourceDoc.selectObjectsOnActiveArtboard();
-        return sourceDoc.selection;
-    };
-    //takes a document and a collection of objects (e.g. selection)
-    //returns a group made from that collection
-    tasks.createGroup = function (sourceDoc, collection) {
-        var newGroup = sourceDoc.groupItems.add();
-        for (i = 0; i < collection.length; i++) {
-            collection[i].moveToBeginning(newGroup);
-        }
-        return newGroup;
-    };
-    tasks.getArtboardCorner = function (artboard) {
-        var corner = [artboard.artboardRect[0], artboard.artboardRect[1]];
-        return corner;
-    };
-    //takes an array [x,y] for an item's position and an array [x,y] for the position of a reference point
-    //returns an array [x,y] for the offset between the two points
-    tasks.getOffset = function (itemPos, referencePos) {
-        var offset = [itemPos[0] - referencePos[0], itemPos[1] - referencePos[1]];
-        return offset;
-    };
-    //takes an object (e.g. group) and a destination array [x,y]
-    //moves the group to the specified destination
-    tasks.translateObjectTo = function (object, destination) {
-        var offset = tasks.getOffset(object.position, destination);
-        object.translate(-offset[0], -offset[1]);
-    };
-    //take a source document, artboard index, and a colorspace (e.g. DocumentColorSpace.RGB)
-    //opens and returns a new document with the source document's units and specified artboard, the specified colorspace
-    tasks.duplicateArtboardInNewDoc = function (sourceDoc, artboardIndex, colorspace) {
-        var rectToCopy = sourceDoc.artboards[artboardIndex].artboardRect;
-        var newDoc = tasks.newDocument(sourceDoc, colorspace);
-        newDoc.artboards.add(rectToCopy);
-        newDoc.artboards.remove(0);
-        return newDoc;
-    };
-    //takes a group
-    //ungroups that group at the top layer (no recursion for nested groups)
-    tasks.ungroupOnce = function (group) {
-        for (i = group.pageItems.length - 1; i >= 0; i--) {
-            group.pageItems[i].move(group.pageItems[i].layer, 
-            /*@ts-ignore*/
-            ElementPlacement.PLACEATEND);
-        }
-    };
-    /****************************
-      CREATING AND SAVING DOCUMENTS
-      *****************************/
-    //take a source document and a colorspace (e.g. DocumentColorSpace.RGB)
-    //opens and returns a new document with the source document's units and the specified colorspace
-    tasks.newDocument = function (sourceDoc, colorSpace) {
-        var preset = new DocumentPreset();
-        /*@ts-ignore*/
-        preset.colorMode = colorSpace;
-        /*@ts-ignore*/
-        preset.units = sourceDoc.rulerUnits;
-        /*@ts-ignore*/
-        var newDoc = app.documents.addDocument(colorSpace, preset);
-        newDoc.pageOrigin = sourceDoc.pageOrigin;
-        newDoc.rulerOrigin = sourceDoc.rulerOrigin;
-        return newDoc;
-    };
-    //takes a document, destination file, starting width and desired width
-    //scales the document proportionally to the desired width and exports as a PNG
-    tasks.scaleAndExportPNG = function (doc, destFile, startWidth, desiredWidth) {
-        var scaling = (100.0 * desiredWidth) / startWidth;
-        var options = new ExportOptionsPNG24();
-        /*@ts-ignore*/
-        options.antiAliasing = true;
-        /*@ts-ignore*/
-        options.transparency = true;
-        /*@ts-ignore*/
-        options.artBoardClipping = true;
-        /*@ts-ignore*/
-        options.horizontalScale = scaling;
-        /*@ts-ignore*/
-        options.verticalScale = scaling;
-        doc.exportFile(destFile, ExportType.PNG24, options);
-    };
-    //takes a document, destination file, starting width and desired width
-    //scales the document proportionally to the desired width and exports as a SVG
-    tasks.scaleAndExportSVG = function (doc, destFile, startWidth, desiredWidth) {
-        var scaling = (100.0 * desiredWidth) / startWidth;
-        var options = new ExportOptionsSVG();
-        /*@ts-ignore*/
-        options.horizontalScale = scaling;
-        /*@ts-ignore*/
-        options.verticalScale = scaling;
-        // /*@ts-ignore*/
-        // options.transparency = true;
-        /*@ts-ignore*/
-        // options.compressed = false; 
-        // /*@ts-ignore*/
-        // options.saveMultipleArtboards = true;
-        // /*@ts-ignore*/
-        // options.artboardRange = ""
-        // options.cssProperties.STYLEATTRIBUTES = false;
-        // /*@ts-ignore*/
-        // options.cssProperties.PRESENTATIONATTRIBUTES = false;
-        // /*@ts-ignore*/
-        // options.cssProperties.STYLEELEMENTS = false;
-        // /*@ts-ignore*/
-        // options.artBoardClipping = true;
-        doc.exportFile(destFile, ExportType.SVG, options);
-    };
     return tasks;
 })();
 // end reusable functions
 // refs
 // https://gist.github.com/joonaspaakko/df2f9e31bdb365a6e5df
-// Finds all .ai files from the input folder + its subfolders 
+// Finds all X files from the input folder + its subfolders 
 var overwrite = true; // boolean
 if (app.documents.length > 0) {
     alert("ERROR: \n Close all documents before running this script.");
 }
 // Run the script
 else {
-    var files, folder = Folder.selectDialog("Please select the folder where the icons are saved");
+    var files, folder = Folder.selectDialog("Please select the folder where the images you need are saved");
     // If folder variable return null, user most likely canceled the dialog or
     // the input folder and it subfolders don't contain any .ai files.
     if (folder != null) {
@@ -142,6 +33,15 @@ else {
         // This is where things actually start happening...
         process(files);
     }
+}
+var folderOneName = "Sitecore product icon assets";
+var folderTwoName = "Marketo product icon assets";
+try {
+    new Folder("".concat(folder.path, "/").concat(folderOneName)).create();
+    new Folder("".concat(folder.path, "/").concat(folderTwoName)).create();
+}
+catch (e) {
+    alert("Issues with creating setup folders. Check your file permission properties or file structure.", e.message);
 }
 function process(files) {
     // Loop through the list of .ai files:
@@ -155,11 +55,7 @@ function process(files) {
         // If overwrite is false, create a new file, otherwise use "file" variable;
         //  file = !overwrite ? new File(file.toString().replace(".ai", " (legacyFile).ai")) : file;
         // custom actions starts here
-        var sourceDoc = app.activeDocument;
-        alert(sourceDoc.name);
-        //return; You can use a return to stop the code and see the effects throughout.
-        // happy vector coding!
-        // ends here
+        // alert(sourceDoc.name);
         // Save
         //app.activeDocument.saveAs(file, SaveOptions_ai())
         // Close
@@ -193,7 +89,8 @@ function GetFiles(folder) {
     for (i = 0; i < items.length; i++) {
         item = items[i];
         // Find .ai files
-        var fileformat = item.name.match(/\.png$/i), legacyFile = item.name.indexOf("(legacyFile)") > 0;
+        // /_1610_2x.png
+        var fileformat = item.name.match(/\_1610_2x.png$/i), legacyFile = item.name.indexOf("(legacyFile)") > 0;
         // If item is a folder, check the folder for files.
         if (item instanceof Folder) {
             // Combine existing array with files found in the folder
