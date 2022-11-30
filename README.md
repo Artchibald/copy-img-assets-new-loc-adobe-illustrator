@@ -1,0 +1,1 @@
+# copy-img-assets-new-loc-adobe-illustrator
