@@ -113,3 +113,96 @@ function moveExpressivePng() {
     }
 }
 moveExpressivePng();
+function moveCorePng() {
+    if (app.documents.length > 0) {
+        alert("ERROR: \n Close all documents before running this script.");
+    }
+    else {
+        if (folder != null) {
+            files = GetFiles(folder);
+            process(files);
+        }
+    }
+    function process(files) {
+        var i;
+        for (i = 0; i < files.length; i++) {
+            var file = files[i];
+            app.open(file);
+            var sourceDoc = app.activeDocument;
+            var filename = "/".concat(sourceDoc.name);
+            // Save in Sitecore
+            var destFileSiteCore = new File(Folder("".concat(sourceDoc.path, "/../../../Sitecore-product-icon-assets")) + filename);
+            CSTasks.scaleAndExportPNG(sourceDoc, destFileSiteCore, 1024, 1024);
+            // Save in Marketo
+            var destFileMarketo = new File(Folder("".concat(sourceDoc.path, "/../../../Marketo-product-icon-assets")) + filename);
+            CSTasks.scaleAndExportPNG(sourceDoc, destFileMarketo, 1024, 1024);
+            // Save
+            //app.activeDocument.saveAs(file, SaveOptions_ai())
+            // Close
+            app.activeDocument.close(SaveOptions.DONOTSAVECHANGES);
+        }
+        // alert("Script is done.");
+    }
+    function GetFiles(folder) {
+        var i, item, files = [], items = folder.getFiles();
+        for (i = 0; i < items.length; i++) {
+            item = items[i];
+            var fileformat = item.name.match(/\_Core.png$/i), legacyFile = item.name.indexOf("(legacyFile)") > 0;
+            if (item instanceof Folder) {
+                files = files.concat(GetFiles(item));
+            }
+            // If the item is a file, push it to the array.
+            else if (item instanceof File && fileformat && !legacyFile) {
+                // Push files to the array
+                files.push(item);
+            }
+        }
+        return files;
+    }
+}
+moveCorePng();
+function move800x400ExpressivePng() {
+    if (app.documents.length > 0) {
+        alert("ERROR: \n Close all documents before running this script.");
+    }
+    else {
+        if (folder != null) {
+            files = GetFiles(folder);
+            process(files);
+        }
+    }
+    function process(files) {
+        var i;
+        for (i = 0; i < files.length; i++) {
+            var file = files[i];
+            app.open(file);
+            var sourceDoc = app.activeDocument;
+            var filename = "/".concat(sourceDoc.name);
+            // Save in Marketo
+            var destFileMarketo = new File(Folder("".concat(sourceDoc.path, "/../../../../../Marketo-product-icon-assets")) + filename);
+            CSTasks.scaleAndExportPNG(sourceDoc, destFileMarketo, 400, 800);
+            // Save
+            //app.activeDocument.saveAs(file, SaveOptions_ai())
+            // Close
+            app.activeDocument.close(SaveOptions.DONOTSAVECHANGES);
+        }
+        // alert("Script is done.");
+    }
+    function GetFiles(folder) {
+        var i, item, files = [], items = folder.getFiles();
+        for (i = 0; i < items.length; i++) {
+            item = items[i];
+            var fileformat = item.name.match(/\_Expressive_RGB_800x400.png$/i), legacyFile = item.name.indexOf("(legacyFile)") > 0;
+            if (item instanceof Folder) {
+                files = files.concat(GetFiles(item));
+            }
+            // If the item is a file, push it to the array.
+            else if (item instanceof File && fileformat && !legacyFile) {
+                // Push files to the array
+                files.push(item);
+            }
+        }
+        return files;
+    }
+}
+move800x400ExpressivePng();
