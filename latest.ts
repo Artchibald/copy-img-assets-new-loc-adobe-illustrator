@@ -213,6 +213,58 @@ function moveCorePng() {
 }
 moveCorePng();
 
+function move800x400Png() {
+
+  if (app.documents.length > 0) {
+    alert("ERROR: \n Close all documents before running this script.");
+  }
+  else {
+    if (folder != null) {
+      files = GetFiles(folder);
+      process(files);
+    }
+  }
+
+  function process(files) {
+    var i;
+    for (i = 0; i < files.length; i++) {
+      var file = files[i];
+      app.open(file);
+      var sourceDoc = app.activeDocument;
+      let filename = `/${sourceDoc.name}`;
+      // Save in Marketo
+      let destFileMarketo = new File(Folder(`${sourceDoc.path}/../../../../../Marketo-product-icon-assets`) + filename);
+      CSTasks.scaleAndExportPNG(sourceDoc, destFileMarketo, 400, 800);
+      // Save
+      //app.activeDocument.saveAs(file, SaveOptions_ai())
+      // Close
+      app.activeDocument.close(SaveOptions.DONOTSAVECHANGES);
+    }
+    // alert("Script is done.");
+  }
+
+  function GetFiles(folder) {
+    var i, item,
+      files = [],
+      items = folder.getFiles();
+    for (i = 0; i < items.length; i++) {
+      item = items[i];
+      var fileformat = item.name.match(/\_800x400.png$/i),
+        legacyFile = item.name.indexOf("(legacyFile)") > 0;
+      if (item instanceof Folder) {
+        files = files.concat(GetFiles(item));
+      }
+      // If the item is a file, push it to the array.
+      else if (item instanceof File && fileformat && !legacyFile) {
+        // Push files to the array
+        files.push(item);
+      }
+    }
+    return files;
+  }
+}
+move800x400Png();
+
 function moveExpressiveSvg() {
 
   if (app.documents.length > 0) {
@@ -285,7 +337,7 @@ function moveCoreSvg() {
       var sourceDoc = app.activeDocument;
       let filename = `/${sourceDoc.name}`;
       // Save in Marketo
-      let destFileSiteCore = new File(Folder(`${sourceDoc.path}/../../../Sitecore-product-icon-assets`) + filename);
+      let destFileSiteCore = new File(Folder(`${sourceDoc.path}/../../../../../Sitecore-product-icon-assets`) + filename);
       CSTasks.scaleAndExportSVG(sourceDoc, destFileSiteCore, 256, 256);
       // Save
       //app.activeDocument.saveAs(file, SaveOptions_ai())
@@ -301,7 +353,7 @@ function moveCoreSvg() {
       items = folder.getFiles();
     for (i = 0; i < items.length; i++) {
       item = items[i];
-      var fileformat = item.name.match(/\_Core.svg$/i),
+      var fileformat = item.name.match(/\_Core_Cropped.svg$/i),
         legacyFile = item.name.indexOf("(legacyFile)") > 0;
       if (item instanceof Folder) {
         files = files.concat(GetFiles(item));
